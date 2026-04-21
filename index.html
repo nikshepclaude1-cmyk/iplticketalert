@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IPL 2026 — Ticket Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg:          #0d0d0d;
+      --surface:     #161616;
+      --surface-2:   #1e1e1e;
+      --border:      #2a2a2a;
+      --border-light:#333;
+      --text-1:      #f5f5f5;
+      --text-2:      #999;
+      --text-3:      #555;
+      --accent:      #f5f5f5;
+      --live:        #22c55e;
+      --live-bg:     rgba(34,197,94,0.08);
+      --soon:        #f59e0b;
+      --soon-bg:     rgba(245,158,11,0.08);
+      --bms:         #e11d48;
+      --bms-bg:      rgba(225,29,72,0.08);
+      --district:    #6366f1;
+      --district-bg: rgba(99,102,241,0.08);
+      --rcb:         #dc2626;
+      --rcb-bg:      rgba(220,38,38,0.08);
+      --r:           10px;
+      --r-sm:        6px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text-1);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Nav ── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      border-bottom: 1px solid var(--border);
+      background: rgba(13,13,13,0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+    .nav-inner {
+      max-width: 1100px; margin: 0 auto;
+      padding: 0 24px;
+      height: 56px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-brand {
+      font-size: 14px; font-weight: 600; letter-spacing: -0.01em;
+      color: var(--text-1); text-decoration: none;
+    }
+    .nav-brand span { color: var(--text-3); font-weight: 400; }
+    .nav-right { display: flex; align-items: center; gap: 20px; }
+    .nav-status { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--text-3); }
+    .status-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--live); animation: blink 2.5s ease-in-out infinite;
+    }
+
+    /* ── Page ── */
+    .page { max-width: 1100px; margin: 0 auto; padding: 40px 24px 80px; }
+
+    /* ── Header ── */
+    .page-header { margin-bottom: 36px; }
+    .page-title {
+      font-size: 28px; font-weight: 600; letter-spacing: -0.03em;
+      color: var(--text-1); line-height: 1.2; margin-bottom: 8px;
+    }
+    .page-sub { font-size: 14px; color: var(--text-3); font-weight: 400; }
+
+    /* ── Stats row ── */
+    .stats {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 1px; background: var(--border);
+      border: 1px solid var(--border); border-radius: var(--r);
+      overflow: hidden; margin-bottom: 32px;
+    }
+    .stat {
+      background: var(--surface); padding: 20px 24px;
+    }
+    .stat-val {
+      font-size: 26px; font-weight: 600; letter-spacing: -0.04em;
+      color: var(--text-1); line-height: 1; margin-bottom: 6px;
+    }
+    .stat-val.c-live { color: var(--live); }
+    .stat-val.c-bms  { color: var(--bms); }
+    .stat-val.c-dist { color: var(--district); }
+    .stat-lbl { font-size: 11px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.08em; }
+
+    /* ── Controls ── */
+    .controls {
+      display: flex; gap: 10px; margin-bottom: 20px;
+      align-items: center; flex-wrap: wrap;
+    }
+    .search-wrap { flex: 1; min-width: 220px; position: relative; }
+    .search-input {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-sm);
+      color: var(--text-1);
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      padding: 9px 14px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .search-input::placeholder { color: var(--text-3); }
+    .search-input:focus { border-color: var(--border-light); }
+
+    .pill-group { display: flex; gap: 6px; flex-wrap: wrap; }
+    .pill {
+      font-family: 'Inter', sans-serif;
+      font-size: 12px; font-weight: 500;
+      padding: 6px 14px; border-radius: 20px; cursor: pointer;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-3);
+      transition: color 0.15s, border-color 0.15s, background 0.15s;
+      white-space: nowrap;
+    }
+    .pill:hover { color: var(--text-1); border-color: var(--border-light); }
+    .pill.on      { color: var(--text-1); border-color: var(--text-1); background: rgba(245,245,245,0.06); }
+    .pill.on-bms  { color: var(--bms);  border-color: var(--bms);  background: var(--bms-bg); }
+    .pill.on-dist { color: var(--district); border-color: var(--district); background: var(--district-bg); }
+    .pill.on-rcb  { color: var(--rcb);  border-color: var(--rcb);  background: var(--rcb-bg); }
+
+    /* ── Sort row ── */
+    .sort-row {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .result-count { font-size: 12px; color: var(--text-3); }
+    .sort-select {
+      font-family: 'Inter', sans-serif; font-size: 12px;
+      background: transparent; border: none; color: var(--text-3);
+      cursor: pointer; outline: none;
+      appearance: none; -webkit-appearance: none;
+    }
+    .sort-select option { background: var(--surface); color: var(--text-1); }
+
+    /* ── Table ── */
+    .table-wrap {
+      border: 1px solid var(--border); border-radius: var(--r); overflow: hidden;
+    }
+    table { width: 100%; border-collapse: collapse; }
+    thead th {
+      font-size: 11px; font-weight: 500; text-transform: uppercase;
+      letter-spacing: 0.08em; color: var(--text-3);
+      padding: 12px 20px; text-align: left;
+      background: var(--surface); border-bottom: 1px solid var(--border);
+    }
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background 0.12s;
+    }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: var(--surface); }
+    tbody td { padding: 16px 20px; vertical-align: middle; }
+
+    .td-match { min-width: 200px; }
+    .match-name {
+      font-size: 13px; font-weight: 500; color: var(--text-1);
+      margin-bottom: 4px; letter-spacing: -0.01em;
+    }
+    .match-venue { font-size: 12px; color: var(--text-3); }
+
+    .td-date { white-space: nowrap; }
+    .date-val { font-size: 13px; color: var(--text-2); font-variant-numeric: tabular-nums; }
+
+    .badge {
+      display: inline-block; font-size: 10px; font-weight: 600;
+      padding: 3px 9px; border-radius: 20px; letter-spacing: 0.04em;
+      text-transform: uppercase; white-space: nowrap;
+    }
+    .badge-bms  { background: var(--bms-bg);  color: var(--bms); }
+    .badge-district { background: var(--district-bg); color: var(--district); }
+    .badge-rcb  { background: var(--rcb-bg);  color: var(--rcb); }
+
+    .td-actions { white-space: nowrap; text-align: right; }
+    .btn-book {
+      display: inline-block; font-family: 'Inter', sans-serif;
+      font-size: 12px; font-weight: 500;
+      padding: 7px 16px; border-radius: var(--r-sm);
+      border: 1px solid var(--border);
+      background: transparent; color: var(--text-2);
+      text-decoration: none; cursor: pointer;
+      transition: color 0.15s, border-color 0.15s, background 0.15s;
+      margin-right: 8px;
+    }
+    .btn-book:hover { color: var(--text-1); border-color: var(--border-light); background: var(--surface-2); }
+
+    .btn-watch {
+      font-family: 'Inter', sans-serif;
+      font-size: 12px; font-weight: 500;
+      padding: 7px 16px; border-radius: var(--r-sm);
+      border: 1px solid var(--border);
+      background: transparent; color: var(--text-2);
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s, background 0.15s;
+    }
+    .btn-watch:hover { color: var(--text-1); border-color: var(--border-light); }
+    .btn-watch.watching {
+      background: rgba(245,245,245,0.06);
+      border-color: var(--text-1);
+      color: var(--text-1);
+    }
+
+    /* ── Empty ── */
+    .empty {
+      padding: 60px 20px; text-align: center;
+      font-size: 13px; color: var(--text-3);
+      background: var(--surface);
+    }
+
+    /* ── Footer ── */
+    footer {
+      margin-top: 60px;
+      border-top: 1px solid var(--border);
+      padding-top: 24px;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 12px;
+    }
+    .footer-left { font-size: 12px; color: var(--text-3); }
+    .footer-links { display: flex; gap: 16px; }
+    .footer-links a { font-size: 12px; color: var(--text-3); text-decoration: none; transition: color 0.15s; }
+    .footer-links a:hover { color: var(--text-2); }
+
+    /* ── Mobile ── */
+    @media (max-width: 700px) {
+      .stats { grid-template-columns: repeat(2, 1fr); }
+      .td-date, .td-platform { display: none; }
+      .page { padding: 24px 16px 60px; }
+      .page-title { font-size: 22px; }
+      .btn-book { display: none; }
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .anim { animation: fadeIn 0.3s ease both; }
+  </style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav>
+  <div class="nav-inner">
+    <a class="nav-brand" href="#">IPL 2026 <span>/ Tickets</span></a>
+    <div class="nav-right">
+      <div class="nav-status">
+        <span class="status-dot"></span>
+        <span id="nav-count">Loading</span>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- Page -->
+<main class="page">
+
+  <div class="page-header anim">
+    <h1 class="page-title">Match Tickets</h1>
+    <p class="page-sub">Track availability across BookMyShow, District, and RCB — all in one place.</p>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats anim" id="stats">
+    <div class="stat"><div class="stat-val" id="s-total">—</div><div class="stat-lbl">Matches</div></div>
+    <div class="stat"><div class="stat-val c-live" id="s-watching">—</div><div class="stat-lbl">Watching</div></div>
+    <div class="stat"><div class="stat-val c-bms" id="s-bms">—</div><div class="stat-lbl">BookMyShow</div></div>
+    <div class="stat"><div class="stat-val c-dist" id="s-district">—</div><div class="stat-lbl">District</div></div>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls anim">
+    <div class="search-wrap">
+      <input class="search-input" id="search" type="text" placeholder="Search team, venue or date..." oninput="render()" />
+    </div>
+    <div class="pill-group">
+      <button class="pill on"      data-f="all"      onclick="setFilter(this)">All</button>
+      <button class="pill"         data-f="watching"  onclick="setFilter(this)">Watching</button>
+      <button class="pill on-bms"  data-f="bms"       onclick="setFilter(this)">BookMyShow</button>
+      <button class="pill on-dist" data-f="district"  onclick="setFilter(this)">District</button>
+      <button class="pill on-rcb"  data-f="rcb"       onclick="setFilter(this)">RCB</button>
+    </div>
+  </div>
+
+  <!-- Sort row -->
+  <div class="sort-row anim">
+    <span class="result-count" id="result-count"></span>
+    <select class="sort-select" id="sort-sel" onchange="render()">
+      <option value="date">Sort by date</option>
+      <option value="match">Sort by match no.</option>
+    </select>
+  </div>
+
+  <!-- Table -->
+  <div class="table-wrap anim" id="table-wrap">
+    <div class="empty">Loading matches...</div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="anim">
+    <span class="footer-left">IPL 2026 — Data updates automatically</span>
+    <div class="footer-links">
+      <a href="https://in.bookmyshow.com/sports/ipl-2026" target="_blank" rel="noopener">BookMyShow</a>
+      <a href="https://www.district.in/events/ipl-ticket-booking" target="_blank" rel="noopener">District</a>
+      <a href="https://shop.royalchallengers.com/ticket" target="_blank" rel="noopener">RCB</a>
+    </div>
+  </footer>
+
+</main>
+
+<script>
+  // ── CONFIG ──────────────────────────────────────────────────────────────────
+  const GITHUB_USER = 'YOUR_GITHUB_USERNAME';
+  const GITHUB_REPO = 'ipl-ticket-alert1';
+  const BRANCH      = 'main';
+  const MATCHES_URL = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/${BRANCH}/matches.json`;
+
+  // ── State ───────────────────────────────────────────────────────────────────
+  let matches = [];
+  let watching = new Set();
+  let filter   = 'all';
+
+  function loadWatching() {
+    try { watching = new Set(JSON.parse(localStorage.getItem('ipl_watching') || '[]')); } catch(e) {}
+  }
+  function saveWatching() {
+    try { localStorage.setItem('ipl_watching', JSON.stringify([...watching])); } catch(e) {}
+  }
+
+  // ── Fetch ───────────────────────────────────────────────────────────────────
+  async function fetchMatches() {
+    try {
+      const res = await fetch(MATCHES_URL + '?t=' + Date.now());
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      matches = await res.json();
+      render();
+    } catch(err) {
+      document.getElementById('table-wrap').innerHTML =
+        `<div class="empty">Could not load match data. Set GITHUB_USER in index.html and ensure the repo is public.</div>`;
+    }
+  }
+
+  // ── Filter ──────────────────────────────────────────────────────────────────
+  function setFilter(el) {
+    filter = el.dataset.f;
+    document.querySelectorAll('.pill').forEach(p => {
+      p.classList.remove('on','on-bms','on-dist','on-rcb');
+    });
+    const cls = { all:'on', watching:'on', bms:'on-bms', district:'on-dist', rcb:'on-rcb' };
+    el.classList.add(cls[filter]);
+    render();
+  }
+
+  function toggleWatch(i) {
+    if (watching.has(i)) watching.delete(i); else watching.add(i);
+    saveWatching();
+    render();
+  }
+
+  // ── Helpers ─────────────────────────────────────────────────────────────────
+  const PLATFORM_LABEL = { bms: 'BookMyShow', district: 'District', rcb: 'RCB' };
+
+  function matchNumber(m) {
+    const n = parseInt(m.match.match(/\d+/) || [0]);
+    return n;
+  }
+
+  function parseDate(d) {
+    return new Date(d.replace(/(\d+)\s(\w+)\s(\d+)/, '$2 $1 $3'));
+  }
+
+  // ── Render ──────────────────────────────────────────────────────────────────
+  function render() {
+    const q    = document.getElementById('search').value.toLowerCase().trim();
+    const sort = document.getElementById('sort-sel').value;
+
+    let list = matches.map((m, i) => ({ ...m, idx: i }));
+
+    // Filter
+    if (q) list = list.filter(m =>
+      m.match.toLowerCase().includes(q) ||
+      m.venue.toLowerCase().includes(q) ||
+      m.date.toLowerCase().includes(q)
+    );
+    if (filter === 'watching')  list = list.filter(m => watching.has(m.idx));
+    else if (filter === 'bms')  list = list.filter(m => m.platform === 'bms');
+    else if (filter === 'district') list = list.filter(m => m.platform === 'district');
+    else if (filter === 'rcb')  list = list.filter(m => m.platform === 'rcb');
+
+    // Sort
+    list.sort((a, b) =>
+      sort === 'date'
+        ? parseDate(a.date) - parseDate(b.date)
+        : matchNumber(a) - matchNumber(b)
+    );
+
+    // Stats
+    document.getElementById('s-total').textContent    = matches.length;
+    document.getElementById('s-watching').textContent = watching.size;
+    document.getElementById('s-bms').textContent      = matches.filter(m => m.platform === 'bms').length;
+    document.getElementById('s-district').textContent = matches.filter(m => m.platform === 'district').length;
+    document.getElementById('nav-count').textContent  = `${matches.length} matches`;
+    document.getElementById('result-count').textContent =
+      list.length === matches.length ? `${list.length} matches` : `${list.length} of ${matches.length}`;
+
+    const wrap = document.getElementById('table-wrap');
+
+    if (!list.length) {
+      wrap.innerHTML = '<div class="empty">No matches found.</div>';
+      return;
+    }
+
+    // Strip "Match N - " prefix for display
+    const nameOnly = s => s.replace(/^Match \d+ - /, '');
+
+    const rows = list.map(m => {
+      const isWatching = watching.has(m.idx);
+      const num = m.match.match(/\d+/)?.[0] || '';
+      return `<tr>
+        <td class="td-match">
+          <div class="match-name">${nameOnly(m.match)}</div>
+          <div class="match-venue">${m.venue}</div>
+        </td>
+        <td class="td-date">
+          <span class="date-val">${m.date}</span>
+        </td>
+        <td class="td-platform">
+          <span class="badge badge-${m.platform}">${PLATFORM_LABEL[m.platform]}</span>
+        </td>
+        <td class="td-actions">
+          <a class="btn-book" href="${m.url}" target="_blank" rel="noopener">Book</a>
+          <button class="btn-watch ${isWatching ? 'watching' : ''}" onclick="toggleWatch(${m.idx})">
+            ${isWatching ? 'Watching' : 'Watch'}
+          </button>
+        </td>
+      </tr>`;
+    }).join('');
+
+    wrap.innerHTML = `
+      <table>
+        <thead>
+          <tr>
+            <th>Match</th>
+            <th class="td-date">Date</th>
+            <th class="td-platform">Platform</th>
+            <th style="text-align:right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+  }
+
+  // ── Boot ────────────────────────────────────────────────────────────────────
+  loadWatching();
+  fetchMatches();
+  setInterval(fetchMatches, 5 * 60 * 1000);
+</script>
+
+</body>
+</html>
